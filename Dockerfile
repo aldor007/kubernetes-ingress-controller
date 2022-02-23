@@ -1,5 +1,6 @@
 # Build the manager binary
 FROM golang:1.17 as builder
+ARG TARGETARCH amd64
 
 WORKDIR /workspace
 
@@ -17,12 +18,12 @@ COPY internal/ internal/
 ARG TAG
 ARG COMMIT
 ARG REPO_INFO
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager -ldflags "-s -w -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Release=$TAG -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Commit=$COMMIT -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Repo=$REPO_INFO" ./internal/cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux  GO111MODULE=on go build -a -o manager -ldflags "-s -w -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Release=$TAG -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Commit=$COMMIT -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Repo=$REPO_INFO" ./internal/cmd/main.go
 
 # Build a manager binary with debug symbols and download Delve
 FROM builder as builder-delve
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager-debug -gcflags=all="-N -l" -ldflags "-X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Release=$TAG -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Commit=$COMMIT -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Repo=$REPO_INFO" ./internal/cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -a -o manager-debug -gcflags=all="-N -l" -ldflags "-X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Release=$TAG -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Commit=$COMMIT -X github.com/kong/kubernetes-ingress-controller/v2/internal/metadata.Repo=$REPO_INFO" ./internal/cmd/main.go
 
 # Create an image that runs a debug build with a Delve remote server on port 2345
 FROM golang:1.17 AS debug
